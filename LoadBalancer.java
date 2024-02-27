@@ -2,33 +2,31 @@ import java.io.*;
 import java.net.*;
 
 public class LoadBalancer {
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         if (args.length < 1) {
-            System.out.println("Usage: java LoadBalancer <port number>");
+            System.out.println("Syntax: java LoadBalancer <port>");
             return;
         }
-        int portNumber = Integer.parseInt(args[0]);
 
-        try (ServerSocket serverSocket = new ServerSocket(portNumber)) {
+        int port = Integer.parseInt(args[0]);
+        try (ServerSocket serverSocket = new ServerSocket(port)) {
+            System.out.println("LoadBalancer is listening on port " + port);
+
             while (true) {
-                try (Socket clientSocket = serverSocket.accept();
-                     PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
-                     BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()))) {
+                Socket socket = serverSocket.accept();
+                System.out.println("New client connected");
 
-                    String inputLine;
-                    while ((inputLine = in.readLine()) != null) {
-                        // Here you would handle the operation request.
-                        // For demonstration, we're just echoing back the input
-                        out.println("Echo from LoadBalancer: " + inputLine);
-                        // In a real scenario, you would parse the inputLine and
-                        // decide to which server node to forward the request.
-                    }
-                } catch (IOException e) {
-                    System.out.println("Exception caught when trying to listen on port "
-                                       + portNumber + " or listening for a connection");
-                    System.out.println(e.getMessage());
-                }
+                InputStream input = socket.getInputStream();
+                BufferedReader reader = new BufferedReader(new InputStreamReader(input));
+
+                String message = reader.readLine();
+                System.out.println("Message from client: " + message);
+
+                socket.close();
             }
+        } catch (IOException ex) {
+            System.out.println("Server exception: " + ex.getMessage());
+            ex.printStackTrace();
         }
     }
 }
