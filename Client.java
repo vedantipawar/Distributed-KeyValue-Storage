@@ -13,7 +13,8 @@ public class Client {
         int port = Integer.parseInt(args[1]);
         
         try (Scanner scanner = new Scanner(System.in)) {
-            System.out.println("Enter your message: ");
+            while(true){
+                System.out.println("Enter your message: ");
             String message = scanner.nextLine(); // Read user input
 
             try (Socket socket = new Socket(hostname, port)) {
@@ -27,6 +28,7 @@ public class Client {
                 System.out.println("Server not found: " + ex.getMessage());
             } catch (IOException ex) {
                 System.out.println("I/O error: " + ex.getMessage());
+            }
             }
         }
     }
