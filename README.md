@@ -21,7 +21,7 @@ First, compile all Java files. Example:
 
 ```sh
 javac LoadBalancer.java ReadServer.java Client.java LFUCache.java
-
+```
 ### Running the System
 
 1. **Start the Load Balancer**:
@@ -30,7 +30,7 @@ javac LoadBalancer.java ReadServer.java Client.java LFUCache.java
 
    ```sh
    java LoadBalancer <LoadBalancerPort>
-
+   ```
 
 2. **Start one or more Read Servers**:
 
@@ -38,14 +38,14 @@ javac LoadBalancer.java ReadServer.java Client.java LFUCache.java
 
    ```sh
    java ReadServer <LoadBalancerPort> <ThisServerPort>
-
+   ```
 3. **Run the Client**:
 
    To send read requests and receive responses, start the Client by connecting to the Load Balancer:
 
    ```sh
    java Client <LoadBalancerHost> <LoadBalancerPort>
-
+   ```
 ## Usage
 
 After starting the Load Balancer, Read Servers, and the Client, utilize the Client's console to input keys. The system will then retrieve the corresponding value from the distributed storage, efficiently utilizing the LFUCache for optimized data access. This approach ensures quick retrieval times and scalability for read-heavy operations.
