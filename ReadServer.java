@@ -50,9 +50,10 @@ public class ReadServer {
     }
     private static void initializeDataStore() {
         // Sample data for demonstration. You should populate this according to your actual data requirements.
-        dataStore.put("key1", "value1");
-        dataStore.put("key2", "value2");
-        dataStore.put("key3", "value3");
+        dataStore.put("A", "America");
+        dataStore.put("B", "Bolivia");
+        dataStore.put("C", "Cambodia");
+        dataStore.put("D", "Denmark");
         // Add more key-value pairs as needed
     }
 }

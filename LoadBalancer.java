@@ -6,6 +6,8 @@ import java.util.List;
 public class LoadBalancer {
     private static List<Integer> serverPorts = new ArrayList<>();
     private static int currentServer = 0;
+    // Initialize LFUCache with a certain capacity, e.g., 10
+    private static LFUCache cache = new LFUCache(10); 
 
     public static void main(String[] args) {
         if (args.length < 1) {
@@ -23,16 +25,24 @@ public class LoadBalancer {
 
                 try (BufferedReader reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
                      PrintWriter clientWriter = new PrintWriter(clientSocket.getOutputStream(), true)) {
-                    String message = reader.readLine();
-                    if (message.startsWith("REGISTER:")) {
+                    String key = reader.readLine();
+                    if (key.startsWith("REGISTER:")) {
                         // This is a registration request from a new read server
-                        int serverPort = Integer.parseInt(message.split(":")[1]);
+                        int serverPort = Integer.parseInt(key.split(":")[1]);
                         serverPorts.add(serverPort);
                         System.out.println("Registered new read server on port: " + serverPort);
                     } else {
-                        // This is a regular client message
-                        String response = forwardMessageToServerAndReceiveResponse(message);
-                        clientWriter.println(response); // Send the response back to the client
+                        // This is a regular client message, check cache first
+                        String cachedValue = cache.get(key);
+                        if (cachedValue != null) {
+                            // Cache hit, return value directly to client
+                            clientWriter.println(cachedValue + " From Cache");
+                        } else {
+                            // Cache miss, forward to read server
+                            String response = forwardMessageToServerAndReceiveResponse(key);
+                            cache.put(key, response); // Cache the new key-value pair
+                            clientWriter.println(response); // Send the response back to the client
+                        }
                     }
                 }
             }
