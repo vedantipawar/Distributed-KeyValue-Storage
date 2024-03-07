@@ -4,10 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class LoadBalancer {
-    private static List<Integer> serverPorts = new ArrayList<>();
+    // Use InetSocketAddress to store both hostname and port
+    private static List<InetSocketAddress> serverAddresses = new ArrayList<>();
     private static int currentServer = 0;
     // Initialize LFUCache with a certain capacity, e.g., 10
-    private static LFUCache cache = new LFUCache(10); 
+    private static LFUCache cache = new LFUCache(2); 
 
     public static void main(String[] args) {
         if (args.length < 1) {
@@ -21,16 +22,20 @@ public class LoadBalancer {
 
             while (true) {
                 Socket clientSocket = serverSocket.accept();
-                System.out.println("New connection");
+                //System.out.println("New connection");
 
                 try (BufferedReader reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
                      PrintWriter clientWriter = new PrintWriter(clientSocket.getOutputStream(), true)) {
                     String key = reader.readLine();
                     if (key.startsWith("REGISTER:")) {
                         // This is a registration request from a new read server
-                        int serverPort = Integer.parseInt(key.split(":")[1]);
-                        serverPorts.add(serverPort);
-                        System.out.println("Registered new read server on port: " + serverPort);
+                        String[] parts = key.split(":");
+                        if (parts.length == 3) {
+                            String hostname = parts[1];
+                            int serverPort = Integer.parseInt(parts[2]);
+                            serverAddresses.add(new InetSocketAddress(hostname, serverPort));
+                            System.out.println("Registered new read server at " + hostname + ":" + serverPort);
+                        }
                     } else {
                         // This is a regular client message, check cache first
                         String cachedValue = cache.get(key);
@@ -53,23 +58,23 @@ public class LoadBalancer {
     }
 
     private static String forwardMessageToServerAndReceiveResponse(String message) {
-        if (serverPorts.isEmpty()) {
+        if (serverAddresses.isEmpty()) {
             System.out.println("No read servers available.");
             return "Error: No read servers available.";
         }
 
-        int serverPort = serverPorts.get(currentServer);
-        currentServer = (currentServer + 1) % serverPorts.size(); // Round-robin logic
+        InetSocketAddress serverAddress = serverAddresses.get(currentServer);
+        currentServer = (currentServer + 1) % serverAddresses.size(); // Round-robin logic
 
-        try (Socket socket = new Socket("localhost", serverPort);
+        try (Socket socket = new Socket(serverAddress.getHostName(), serverAddress.getPort());
              PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
              BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
             writer.println(message);
-            System.out.println("Forwarded message to server on port: " + serverPort);
-            
+            System.out.println("Forwarded message to server at: " + serverAddress);
+
             // Wait for the response from the ReadServer
             String response = reader.readLine();
-            System.out.println("Received response from server on port: " + serverPort);
+            System.out.println("Received response from server at: " + serverAddress);
             return response; // Return the response received from the server
         } catch (IOException ex) {
             System.out.println("Could not forward message: " + ex.getMessage());

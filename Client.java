@@ -28,9 +28,7 @@ public class Client {
                 String response = reader.readLine(); // Read the response from the server
                 System.out.println("Server's response: " + response);
 
-                System.out.println("Message sent to the load balancer and response received");
-
-                System.out.println("Message sent to the load balancer");
+                // System.out.println("Message sent to the load balancer");
             } catch (UnknownHostException ex) {
                 System.out.println("Server not found: " + ex.getMessage());
             } catch (IOException ex) {
