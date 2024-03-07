@@ -32,14 +32,17 @@ public class ReadServer {
             System.out.println("ReadServer listening on port " + thisPort);
 
             while (true) {
-                try (Socket clientSocket = serverSocket.accept();
-                     BufferedReader reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()))) {
-                    String message = reader.readLine();
-                    System.out.println("Received message: " + message);
-                    String value = dataStore.getOrDefault(message, "Key not found");
-                    System.out.println("Value in storage: " + value);
+                try (Socket lbSocket = serverSocket.accept();
+                     BufferedReader reader = new BufferedReader(new InputStreamReader(lbSocket.getInputStream()));
+                     PrintWriter writer = new PrintWriter(lbSocket.getOutputStream(), true)) { // PrintWriter to write back to the client
+                    String key = reader.readLine();
+                    System.out.println("Received message: " + key);
+                    String value = dataStore.getOrDefault(key, "Key not found");
+                    System.out.println("Sending back value: " + value);
+                    writer.println(value); // Send the value back to the loadbalancer
                 }
             }
+            
         } catch (IOException ex) {
             System.out.println("Server exception: " + ex.getMessage());
             ex.printStackTrace();

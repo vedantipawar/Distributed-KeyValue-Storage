@@ -21,7 +21,8 @@ public class LoadBalancer {
                 Socket clientSocket = serverSocket.accept();
                 System.out.println("New connection");
 
-                try (BufferedReader reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()))) {
+                try (BufferedReader reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+                     PrintWriter clientWriter = new PrintWriter(clientSocket.getOutputStream(), true)) {
                     String message = reader.readLine();
                     if (message.startsWith("REGISTER:")) {
                         // This is a registration request from a new read server
@@ -30,7 +31,8 @@ public class LoadBalancer {
                         System.out.println("Registered new read server on port: " + serverPort);
                     } else {
                         // This is a regular client message
-                        forwardMessageToServer(message);
+                        String response = forwardMessageToServerAndReceiveResponse(message);
+                        clientWriter.println(response); // Send the response back to the client
                     }
                 }
             }
@@ -40,21 +42,28 @@ public class LoadBalancer {
         }
     }
 
-    private static void forwardMessageToServer(String message) {
+    private static String forwardMessageToServerAndReceiveResponse(String message) {
         if (serverPorts.isEmpty()) {
             System.out.println("No read servers available.");
-            return;
+            return "Error: No read servers available.";
         }
 
         int serverPort = serverPorts.get(currentServer);
         currentServer = (currentServer + 1) % serverPorts.size(); // Round-robin logic
 
-        try (Socket socket = new Socket("localhost", serverPort)) {
-            PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
+        try (Socket socket = new Socket("localhost", serverPort);
+             PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
+             BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
             writer.println(message);
             System.out.println("Forwarded message to server on port: " + serverPort);
+            
+            // Wait for the response from the ReadServer
+            String response = reader.readLine();
+            System.out.println("Received response from server on port: " + serverPort);
+            return response; // Return the response received from the server
         } catch (IOException ex) {
             System.out.println("Could not forward message: " + ex.getMessage());
+            return "Error: Could not communicate with read server.";
         }
     }
 }

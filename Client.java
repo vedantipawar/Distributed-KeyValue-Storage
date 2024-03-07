@@ -22,6 +22,13 @@ public class Client {
                 PrintWriter writer = new PrintWriter(output, true);
 
                 writer.println(message);
+                InputStream input = socket.getInputStream();
+                BufferedReader reader = new BufferedReader(new InputStreamReader(input));
+
+                String response = reader.readLine(); // Read the response from the server
+                System.out.println("Server's response: " + response);
+
+                System.out.println("Message sent to the load balancer and response received");
 
                 System.out.println("Message sent to the load balancer");
             } catch (UnknownHostException ex) {
