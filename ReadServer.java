@@ -49,11 +49,26 @@ public class ReadServer {
                 try (Socket clientSocket = serverSocket.accept();
                      BufferedReader reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
                      PrintWriter writer = new PrintWriter(clientSocket.getOutputStream(), true)) {
-                    String key = reader.readLine();
-                    System.out.println("Received message: " + key);
-                    String value = dataStore.getOrDefault(key, "Key not found");
-                    System.out.println("Sending back value: " + value);
-                    writer.println(value); // Send the value back to the LoadBalancer
+                    String message = reader.readLine();
+                    System.out.println("Received message: " + message);
+                    if (message.startsWith("Write:")) {
+                        // Handle write request
+                        String[] parts = message.split(":", 3); // Split into Write, key, and value
+                        if (parts.length == 3) {
+                            String key = parts[1];
+                            String value = parts[2];
+                            dataStore.put(key, value); // Update the data store
+                            System.out.println("Updated key '" + key + "' with value '" + value + "'");
+                            writer.println("Write successful"); // Optional: Confirm write success
+                        } else {
+                            writer.println("Write format error");
+                        }
+                    } else {
+                        // Handle read request
+                        String value = dataStore.getOrDefault(message, "Key not found");
+                        System.out.println("Sending back value: " + value);
+                        writer.println(value); // Send the value back to the client/LoadBalancer
+                    }
                 }
             }            
         } catch (IOException ex) {

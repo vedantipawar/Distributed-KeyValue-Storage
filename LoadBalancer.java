@@ -42,6 +42,10 @@ public class LoadBalancer {
                         if (cachedValue != null) {
                             // Cache hit, return value directly to client
                             clientWriter.println(cachedValue + " From Cache");
+                        } else if (key.startsWith("Write:")) {
+                            // It's a write request, broadcast it
+                            broadcastMessageToServers(key);
+                            clientWriter.println("Write operation broadcasted to all servers.");
                         } else {
                             // Cache miss, forward to read server
                             String response = forwardMessageToServerAndReceiveResponse(key);
@@ -56,6 +60,19 @@ public class LoadBalancer {
             ex.printStackTrace();
         }
     }
+
+    private static void broadcastMessageToServers(String message) {
+        for (InetSocketAddress serverAddress : serverAddresses) {
+            try (Socket socket = new Socket(serverAddress.getHostName(), serverAddress.getPort());
+                 PrintWriter writer = new PrintWriter(socket.getOutputStream(), true)) {
+                writer.println(message);
+                System.out.println("Broadcasted write message to server at: " + serverAddress);
+            } catch (IOException ex) {
+                System.out.println("Could not send write message to server at " + serverAddress + ": " + ex.getMessage());
+            }
+        }
+    }
+    
 
     private static String forwardMessageToServerAndReceiveResponse(String message) {
         if (serverAddresses.isEmpty()) {
