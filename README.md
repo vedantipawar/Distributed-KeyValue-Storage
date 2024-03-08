@@ -62,6 +62,11 @@ javac LoadBalancer.java ReadServer.java Client.java LFUCache.java
 
 After starting the Load Balancer, Read Servers, and the Client, utilize the Client's console to input keys. The system will then retrieve the corresponding value from the distributed storage, efficiently utilizing the LFUCache for optimized data access. This approach ensures quick retrieval times and scalability for read-heavy operations.
 
+
+
+https://github.com/vedantipawar/Distributed-KeyValue-Storage/assets/51786206/46761328-2d36-4e45-bbd3-cd55dcb3a161
+
+
 ## Operations
 
 Once you run the Client, LoadBalancer and ReadServer, the client can either read an existing value or write a  new key-value. 
