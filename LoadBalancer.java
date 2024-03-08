@@ -8,7 +8,7 @@ public class LoadBalancer {
     private static List<InetSocketAddress> serverAddresses = new ArrayList<>();
     private static int currentServer = 0;
     // Initialize LFUCache with a certain capacity, e.g., 10
-    private static LFUCache cache = new LFUCache(2); 
+    private static LFUCache cache = new LFUCache(3); 
 
     public static void main(String[] args) {
         if (args.length < 1) {
@@ -33,8 +33,14 @@ public class LoadBalancer {
                         if (parts.length == 3) {
                             String hostname = parts[1];
                             int serverPort = Integer.parseInt(parts[2]);
-                            serverAddresses.add(new InetSocketAddress(hostname, serverPort));
+                            InetSocketAddress newServerAddress = new InetSocketAddress(hostname, serverPort);
+                            serverAddresses.add(newServerAddress);
                             System.out.println("Registered new read server at " + hostname + ":" + serverPort);
+
+                            // If it's not the first server, request state snapshot from the first server
+                            if (serverAddresses.size() > 1) {
+                                requestAndSendStateSnapshot(newServerAddress);
+                        }
                         }
                     } else {
                         // This is a regular client message, check cache first
@@ -60,6 +66,42 @@ public class LoadBalancer {
             ex.printStackTrace();
         }
     }
+
+    private static void requestAndSendStateSnapshot(InetSocketAddress newServerAddress) {
+        // Address of the first server to request the snapshot from
+        InetSocketAddress firstServerAddress = serverAddresses.get(0);
+        //System.out.println("Inside requestAndSEnf function");
+    
+        
+            // Connect to the first read server to request the state snapshot
+            try (Socket firstServerSocket = new Socket(firstServerAddress.getHostName(), firstServerAddress.getPort());
+                 PrintWriter firstServerWriter = new PrintWriter(firstServerSocket.getOutputStream(), true);
+                 BufferedReader firstServerReader = new BufferedReader(new InputStreamReader(firstServerSocket.getInputStream()))) {
+                
+                //System.out.println("Sending request fpr a state snapshot");
+                // Send a request for the state snapshot. Adjust the message as necessary based on your protocol
+                firstServerWriter.println("REQUEST_STATE_SNAPSHOT");
+                
+                // Assume the first server responds with the state snapshot as a serialized string
+                String stateSnapshot = firstServerReader.readLine();
+                System.out.println("State snapshot received");
+                // Now connect to the newly registered read server to send the snapshot
+                try (Socket newServerSocket = new Socket(newServerAddress.getHostName(), newServerAddress.getPort());
+                     PrintWriter newServerWriter = new PrintWriter(newServerSocket.getOutputStream(), true)) {
+       
+                    // Send the state snapshot to the new server. Adjust the message as necessary based on your protocol
+                    newServerWriter.println("STATE_SNAPSHOT:" + stateSnapshot);
+                    System.out.println("State snapshot sent to new server at " + newServerAddress);
+                } catch (IOException ex) {
+                    System.out.println("Could not send state snapshot to new server at " + newServerAddress + ": " + ex.getMessage());
+                }
+            }
+            catch (IOException ex) {
+            System.out.println("Could not request state snapshot from first server at " + firstServerAddress + ": " + ex.getMessage());
+        }
+    }
+    
+    
 
     private static void broadcastMessageToServers(String message) {
         for (InetSocketAddress serverAddress : serverAddresses) {
