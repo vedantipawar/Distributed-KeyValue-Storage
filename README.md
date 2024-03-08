@@ -37,7 +37,7 @@ javac LoadBalancer.java ReadServer.java Client.java LFUCache.java
    Launch each Read Server with the Load Balancer's port and a unique port for the server:
 
    ```sh
-   java ReadServer <LoadBalancerPort> <ThisServerPort>
+   java ReadServer <LoadBalancerHost> <LoadBalancerPort> <ThisServerPort>
    ```
 3. **Run the Client**:
 
@@ -49,6 +49,49 @@ javac LoadBalancer.java ReadServer.java Client.java LFUCache.java
 ## Usage
 
 After starting the Load Balancer, Read Servers, and the Client, utilize the Client's console to input keys. The system will then retrieve the corresponding value from the distributed storage, efficiently utilizing the LFUCache for optimized data access. This approach ensures quick retrieval times and scalability for read-heavy operations.
+
+## Operations
+
+Once you run the Client, LoadBalancer and ReadServer, the client can either read an existing value or write a  new key-value. 
+### Reading a Value:
+![image](https://github.com/vedantipawar/Distributed-KeyValue-Storage/assets/51786206/09aae299-16ea-4b26-87ed-36462f7db053)
+### Client received the value from Readserver running on port 8081:
+![image](https://github.com/vedantipawar/Distributed-KeyValue-Storage/assets/51786206/0df60547-4b66-41fa-b34b-8bb1485994e3)
+
+### Writing new Values:
+Currently, in our network we only have on ReadServer.
+![image](https://github.com/vedantipawar/Distributed-KeyValue-Storage/assets/51786206/68a37aae-8ad1-4920-a332-09f36a1dac90)
+
+### Adding a new ReadServer which will register itself with Loadbalancer and ask for the latest key-value snapshots:
+![image](https://github.com/vedantipawar/Distributed-KeyValue-Storage/assets/51786206/290ec4ea-5763-4fbf-b41d-1be095ed7b1f)
+
+### Even though we wrote the key value: E:Elephant before starting the ReadServer on 8082, we can see it is ReadServer on 8082 that is sending the requested value. This also shows that requests from the Client are directed to ReadServers in the network based in consistent hashing. So 
+
+![image](https://github.com/vedantipawar/Distributed-KeyValue-Storage/assets/51786206/a08874ff-41d6-4fe4-92d6-597dcadf9f1c)
+
+![image](https://github.com/vedantipawar/Distributed-KeyValue-Storage/assets/51786206/d6c045f1-3ba2-48e9-8023-3e7735aaafa5)
+
+ReadServer1(running on port 8081) is responsible for sending the value for key: D,A and ReadServer(running on port 8082) is reponsible for sending the value for key: E
+![image](https://github.com/vedantipawar/Distributed-KeyValue-Storage/assets/51786206/3282d32a-7ecf-432c-b3ac-3e094224b9c9)
+
+![image](https://github.com/vedantipawar/Distributed-KeyValue-Storage/assets/51786206/06eb03ba-6a02-4af6-8000-f70e07e40e21)
+
+### Now when we write new data, it is broadcasts again to all servers in the network i.e ReadServer1 and ReadServer2
+
+![image](https://github.com/vedantipawar/Distributed-KeyValue-Storage/assets/51786206/949e2326-1449-40cf-83da-d9ef61fc396f)
+
+![image](https://github.com/vedantipawar/Distributed-KeyValue-Storage/assets/51786206/0bdec725-ae7f-4b8e-9292-030e9b89941b)
+
+![image](https://github.com/vedantipawar/Distributed-KeyValue-Storage/assets/51786206/1b7b4570-5dba-4d8a-bb69-f3084cea4db9)
+
+
+
+
+
+
+
+
+
 
 ## Contributing
 
