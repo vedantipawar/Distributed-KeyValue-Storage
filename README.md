@@ -13,7 +13,7 @@ This project implements a distributed key-value storage system which enables cli
 - **Read and Write Operations**: Clients can perform read or write operations on the key-value store.
 - **Broadcast Write**: Write operations are broadcasted by the load balancer to all read servers to maintain consistency.
 - **Dynamic Scalability**: New servers can be added to the network, with the load balancer facilitating data synchronization.
-- **Consistent Hashing**: Consistent hashing ensures a balanced spread of read requests across the read servers.
+- **Hashing**: Round-Robin hashing ensures a balanced spread of read requests across the read servers.
 - **LFU Cache**: Implemented LFU (Least Frequently Used) cache at the load balancer level to optimize performance. Infrequently accessed values are evicted from the cache, reducing communication overhead between the load balancer and read servers.
 
 ## Benefits
