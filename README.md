@@ -69,7 +69,7 @@ https://github.com/vedantipawar/Distributed-KeyValue-Storage/assets/51786206/467
 
 ## Operations
 
-Once you run the Client, LoadBalancer and ReadServer, the client can either read an existing value or write a  new key-value. 
+Once you run the Client, LoadBalancer and ReadServer, the client can either read an existing value or write a new key-value. 
 
 Reading a Value:
 
@@ -89,7 +89,7 @@ Adding a new ReadServer which will register itself with Loadbalancer and ask for
 
 ![image](https://github.com/vedantipawar/Distributed-KeyValue-Storage/assets/51786206/290ec4ea-5763-4fbf-b41d-1be095ed7b1f)
 
-Even though we wrote the key value: E:Elephant before starting the ReadServer on 8082, we can see it is ReadServer on 8082 that is sending the requested value. This also shows that requests from the Client are directed to ReadServers in the network based in consistent hashing. 
+Even though we wrote the key value: E:Elephant before starting the ReadServer on 8082, we can see it is ReadServer on 8082 that is sending the requested value. This also shows that requests from the Client are directed to ReadServers in the network based on consistent hashing. 
 
 ![image](https://github.com/vedantipawar/Distributed-KeyValue-Storage/assets/51786206/a08874ff-41d6-4fe4-92d6-597dcadf9f1c)
 
